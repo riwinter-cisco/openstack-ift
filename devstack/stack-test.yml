@@ -1,0 +1,38 @@
+---
+- hosts: control 
+
+  tasks:
+    - name: Include stack vars
+      include_vars: stack-vars.yml
+
+    - name: Create workspace directory 
+      file: path="{{ ws }}" state=directory mode="u=rwx,g=rwx,o=rwx"
+      become: yes
+      become_method: sudo 
+
+    - name: Clone Openstack Tempest 
+      git: repo=https://github.com/openstack/tempest.git
+           dest="{{ ws }}/tempest" 
+
+    - name: Run tox -efull --notest
+      command: tox -efull --notest 
+      args:
+        chdir: "{{ ws }}/tempest"
+
+    - name: Copy baseline tempest.conf to workspace
+      copy: src=./configs/tempest.conf 
+            dest="{{ ws }}/tempest/etc"
+
+    - name: Stat tempest/.testrepository
+      stat: path="{{ ws }}/tempest/.testrepository"
+      register: tempest_repositroy_stat
+
+    - name: Run testr init
+      shell: source .tox/full/bin/activate && testr init
+             chdir="{{ ws }}/tempest/"
+      when: not tempest_repositroy_stat.stat.exists
+      ignore_errors: yes
+
+    - name: Run testr list-tests
+      shell: source .tox/full/bin/activate && testr list-tests 
+             chdir="{{ ws }}/tempest/"

@@ -1,0 +1,8 @@
+---
+
+    ws: /opt/{{ release }}
+    release: kilo
+    release_branch: stable/{{ release }}
+    devstack_branch: stable/{{ release }}
+    devstack_repo: https://github.com/openstack-dev/devstack.git  
+

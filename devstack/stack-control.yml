@@ -1,0 +1,21 @@
+---
+- hosts: control
+
+  tasks:
+  - name: Include stack vars
+    include_vars: stack-vars.yml
+
+  - name: Stat working directory
+    stat: path={{ ws }}
+    register: ws_directory_stat
+
+  - name: Copy local.conf 
+    copy: src=./configs/{{ release }}/local.conf 
+          dest={{ ws }}/devstack/local.conf
+    when: ws_directory_stat.stat.exists
+
+  - name: Stack Openstack controller node
+    command: ./stack.sh
+    args:
+       chdir: "{{ ws }}/devstack" 
+

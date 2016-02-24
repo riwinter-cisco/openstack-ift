@@ -1,0 +1,34 @@
+---
+- hosts: stack 
+
+  tasks:
+  - name: Inculde Release specific variables
+    include_vars: stack-vars.yml
+
+  - name: Stat stack directory
+    stat: path=/opt/stack
+    register: stack_directory_stat
+
+  - name: Remove old stack code 
+    file: path=/opt/stack state=absent
+    become: yes
+    become_method: sudo
+    when: stack_directory_stat.stat.exists
+
+  - name: Remove old workspace 
+    file: path={{ ws }} state=absent
+    become: yes
+    become_method: sudo
+
+  - name: Create workspace directory
+    file: path={{ ws }} state=directory mode="u=rwx,g=rwx,o=rwx"
+    become: yes
+    become_method: sudo
+ 
+  - name: Clone devstack 
+    git: repo="{{ devstack_repo }}"
+         dest="{{ ws }}/devstack"
+         version="{{ devstack_branch }}"
+         force=yes
+
+

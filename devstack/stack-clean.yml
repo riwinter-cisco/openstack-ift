@@ -1,0 +1,29 @@
+---
+- hosts: all 
+
+  tasks:
+  - name: Include stack vars
+    include_vars: stack-vars.yml
+
+  - name: Stat working directory
+    stat: path={{ ws }}
+    register: ws_directory_stat
+
+  - name: Unstack the stack
+    command: ./unstack.sh
+    args:
+       chdir: "{{ ws }}/devstack"
+    when: ws_directory_stat.stat.exists
+
+  - name: Clean Stack 
+    command: ./clean.sh
+    args:
+       chdir: "{{ ws }}/devstack" 
+    when: ws_directory_stat.stat.exists
+
+  - name: Remove devstack workspace
+    file: path={{ ws }} state=absent 
+    become: yes
+    become_method: sudo
+    when: ws_directory_stat.stat.exists
+    

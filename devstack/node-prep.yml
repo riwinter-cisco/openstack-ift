@@ -1,0 +1,26 @@
+---
+- hosts: stack
+
+  tasks:
+
+  - name: apt-get update
+    apt: update_cache=yes
+    become: yes
+    become_method: sudo
+
+
+  - name: Install python pip
+    apt: name=python-pip state=present 
+    become: yes
+    become_method: sudo
+
+  - name: Install NTP
+    apt: name=ntp state=present
+    become: yes
+    become_method: sudo
+
+  - name: Setup NTP to run
+    service: name=ntp state=started enabled=yes
+    become: yes
+    become_method: sudo
+  
